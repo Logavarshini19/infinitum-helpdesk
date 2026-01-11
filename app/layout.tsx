@@ -1,10 +1,9 @@
 import './globals.css'
 import { Metadata } from 'next'
-import { DottedSurface } from '@/components/dotted-surface'
 import { Sidebar } from '@/components/sidebar'
 
 export const metadata: Metadata = {
-  title: 'Infinitum Helpdesk - Kriya 2025',
+  title: 'Infinitum Helpdesk - 2026',
   description: 'Event helpdesk for Infinitum - on-spot registration, kit distribution, and tracking',
 }
 
@@ -19,7 +18,6 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body>
-        <DottedSurface />
         <Sidebar />
         <div className="main-content">
           {children}

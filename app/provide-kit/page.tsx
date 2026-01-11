@@ -11,7 +11,10 @@ export default function ProvideKit() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [scannerMode, setScannerMode] = useState<boolean>(false);
+  const [scannedCode, setScannedCode] = useState<string>('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const scannerInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     // Check authentication
@@ -20,6 +23,42 @@ export default function ProvideKit() {
       router.push('/login');
     }
   }, [router]);
+
+  useEffect(() => {
+    // Focus scanner input when scanner mode is enabled
+    if (scannerMode && scannerInputRef.current) {
+      scannerInputRef.current.focus();
+    }
+  }, [scannerMode]);
+
+  const handleScannerInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setScannedCode(value);
+
+    // Auto-submit when scanned code matches pattern (e.g., INFIN1234 or just last 4 digits)
+    if (value.length >= 4) {
+      const lastFourDigits = value.slice(-4);
+      if (/^\d{4}$/.test(lastFourDigits)) {
+        // Extract last 4 digits and fetch
+        const digits = lastFourDigits.split('');
+        setOtpDigits(digits);
+        fetchParticipantDetails(lastFourDigits);
+        setScannedCode('');
+      }
+    }
+  };
+
+  const toggleScannerMode = () => {
+    setScannerMode(!scannerMode);
+    setScannedCode('');
+    if (!scannerMode) {
+      // Clearing manual input when enabling scanner mode
+      setOtpDigits(['', '', '', '']);
+      setParticipantData(null);
+      setError('');
+      setSuccess('');
+    }
+  };
 
   const handleOtpChange = (index: number, value: string) => {
     // Only allow numbers
@@ -136,46 +175,130 @@ export default function ProvideKit() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '40px' }}>
         <h1>Provide Kit</h1>
+        <button 
+          className="btn btn-primary" 
+          onClick={toggleScannerMode}
+          style={{ 
+            maxWidth: '250px', 
+            fontSize: '14px',
+            padding: '12px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 7h3m14 0h3M3 12h18M3 17h3m14 0h3"/>
+            <rect x="7" y="5" width="10" height="14" rx="1"/>
+          </svg>
+          {scannerMode ? 'Disable Scanner Mode' : 'Enable Scanner Mode'}
+        </button>
       </div>
 
       <div className="page-content">
         {error && <div className="alert alert-error">{error}</div>}
         {success && <div className="alert alert-success">{success}</div>}
 
-        {/* ID Input Section */}
-        <section>
-          <h2 className="section-title">Enter Kriya ID</h2>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <p style={{ fontSize: '16px', color: 'var(--text-gray)', marginBottom: '16px' }}>
-              Enter the last 4 digits of participant ID
-            </p>
-            <div className="otp-input-group">
-              <span className="otp-prefix">KRIYA</span>
-              {otpDigits.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={el => inputRefs.current[index] = el}
-                  type="text"
-                  className="otp-input"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
-                  autoFocus={index === 0}
-                />
-              ))}
+        {/* Scanner Mode Input */}
+        {scannerMode && (
+          <section style={{ marginBottom: '32px' }}>
+            <div className="alert alert-info" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7h3m14 0h3M3 12h18M3 17h3m14 0h3"/>
+                <rect x="7" y="5" width="10" height="14" rx="1"/>
+              </svg>
+              <span><strong>Scanner Mode Active</strong> - Scan the barcode now</span>
             </div>
-          </div>
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+              <div style={{ 
+                display: 'inline-block',
+                padding: '32px 48px',
+                background: 'linear-gradient(135deg, rgba(228, 88, 88, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%)',
+                borderRadius: '20px',
+                border: '3px dashed var(--primary)',
+                marginBottom: '20px'
+              }}>
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
+                  <path d="M3 7h3m14 0h3M3 12h18M3 17h3m14 0h3"/>
+                  <rect x="7" y="5" width="10" height="14" rx="1"/>
+                </svg>
+                <p style={{ color: 'var(--primary)', fontSize: '18px', fontWeight: '600', margin: '0' }}>Ready to Scan</p>
+              </div>
+              <input
+                ref={scannerInputRef}
+                type="text"
+                className="form-input"
+                placeholder="Scanning... (cursor auto-focused)"
+                value={scannedCode}
+                onChange={handleScannerInput}
+                autoFocus
+                style={{ 
+                  maxWidth: '500px', 
+                  margin: '0 auto',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  border: '3px solid var(--primary)',
+                  backgroundColor: 'rgba(228, 88, 88, 0.05)',
+                  padding: '20px'
+                }}
+              />
+            </div>
+          </section>
+        )}
 
-          {loading && (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Loading participant details...</p>
+        {/* ID Input Section - Show only when scanner mode is OFF */}
+        {!scannerMode && (
+          <section>
+            <h2 className="section-title">Enter Infinitum ID</h2>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '24px', fontWeight: '500' }}>
+                Enter the last 4 digits of participant ID
+              </p>
+              <div className="otp-input-group">
+                <span className="otp-prefix" style={{ 
+                  fontSize: '32px',
+                  fontWeight: '700',
+                  color: 'var(--text-primary)',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  fontFamily: "'Playfair Display', serif",
+                  letterSpacing: '1px'
+                }}>Infinitum</span>
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={el => inputRefs.current[index] = el}
+                    type="text"
+                    className="otp-input"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </div>
             </div>
-          )}
-        </section>
+
+            {loading && (
+              <div className="loading">
+                <div className="spinner"></div>
+                <p>Loading participant details...</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Loading indicator for scanner mode */}
+        {scannerMode && loading && (
+          <div className="loading">
+            <div className="spinner"></div>
+            <p>Loading participant details...</p>
+          </div>
+        )}
 
         {/* Participant Details */}
         {participantData && (

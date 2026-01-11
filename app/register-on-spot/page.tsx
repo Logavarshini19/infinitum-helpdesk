@@ -365,7 +365,7 @@ export default function RegisterOnSpot() {
               <form onSubmit={handleGeneratePaymentUrl}>
                 <div className="two-column">
                   <div className="form-group">
-                    <label htmlFor="participantId" className="form-label">Kriya ID</label>
+                    <label htmlFor="participantId" className="form-label">Infinitum ID</label>
                     <input
                       type="text"
                       id="participantId"

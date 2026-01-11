@@ -20,10 +20,9 @@ export function Sidebar() {
   }
 
   const navItems = [
-    { icon: '🏠', label: 'Dashboard', path: '/' },
-    { icon: '👤', label: 'Register', path: '/register-on-spot' },
-    { icon: '📦', label: 'Provide Kit', path: '/provide-kit' },
-    { icon: '📋', label: 'Kit List', path: '/kit-list' },
+    { label: 'Register', path: '/register-on-spot' },
+    { label: 'Provide Kit', path: '/provide-kit' },
+    { label: 'Kit List', path: '/kit-list' },
   ];
 
   const handleLogout = () => {
@@ -44,7 +43,6 @@ export function Sidebar() {
             priority
           />
         </div>
-        <h3 className="sidebar-title">Infinitum</h3>
       </div>
 
       <nav className="sidebar-nav">
@@ -54,14 +52,12 @@ export function Sidebar() {
             onClick={() => router.push(item.path)}
             className={`sidebar-nav-item ${pathname === item.path ? 'active' : ''}`}
           >
-            <span className="sidebar-nav-icon">{item.icon}</span>
             <span className="sidebar-nav-label">{item.label}</span>
           </button>
         ))}
       </nav>
 
       <button onClick={handleLogout} className="sidebar-logout">
-        <span className="sidebar-nav-icon">🚪</span>
         <span className="sidebar-nav-label">Logout</span>
       </button>
     </div>
