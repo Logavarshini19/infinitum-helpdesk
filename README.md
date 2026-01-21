@@ -86,7 +86,7 @@ infinitum-helpdesk/
 
    ```env
    # MongoDB connection string (get from MongoDB Atlas)
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/infinitum-2026
+   MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/infinitum-2026
 
    # API URL (use localhost for development)
    NEXT_PUBLIC_API_URL=http://localhost:3001
